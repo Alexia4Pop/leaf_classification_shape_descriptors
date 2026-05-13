@@ -74,8 +74,8 @@ Mat segmentLeaf(Mat src) {
     //GaussianBlur(gray, blurred, Size(5, 5), 0);
 
 
-    //Mat clean = ex7_1_3_opening(binary);
-    //clean = ex7_1_4_closing(clean);
+    Mat clean = ex7_1_3_opening(dst);
+    clean = ex7_1_4_closing(clean);
 
     return dst;
 }
@@ -279,8 +279,7 @@ void runSingleTest() {
         }
 }
 
-
-int main()
+int main_orig()
 {
 	cv::utils::logging::setLogLevel(cv::utils::logging::LOG_LEVEL_FATAL);
 	projectPath = _wgetcwd(0, 0);
@@ -350,6 +349,106 @@ int main()
 	return 0;
 }
 
+int main()
+{
+    cv::utils::logging::setLogLevel(cv::utils::logging::LOG_LEVEL_FATAL);
+    projectPath = _wgetcwd(0, 0);
+
+    int op;
+    do
+    {
+        system("cls");
+        destroyAllWindows();
+        {
+            printf("Menu:\n");
+            printf(" 1 - Open image\n");
+            printf(" 0 - Exit\n\n");
+        }
+        printf("Option: ");
+        scanf("%d", &op);
+
+        char fname[MAX_PATH];
+        while (openFileDlg(fname)) {
+            Mat src = imread(fname, IMREAD_COLOR);
+            if (src.empty()) continue;
+
+            //Mat inverted;
+            //cv::bitwise_not(src, inverted);
+
+            Mat resized_image = resize_image(src);
+			imshow("Original image", resized_image);
+
+            //threshold(resized_image, resized_image, 127, 255, THRESH_BINARY);
+			//imshow("Thresholded Image", resized_image);
+
+			Mat segmented = segmentByRemovingPink(resized_image);
+			imshow("Segmented Image", segmented);
+
+            threshold(segmented, segmented, 127, 255, THRESH_BINARY);
+            imshow("Thresholded Image", segmented);
+
+            Mat inverted;
+            cv::bitwise_not(segmented, inverted);
+
+            Mat seeds;
+            inRange(inverted, 255, 255, seeds);
+
+            // Găsim primul pixel alb din 'seeds' pentru a porni Region Filling-ul tău
+            Point start_point(-1, -1);
+            for (int i = 0; i < seeds.rows; i++) {
+                for (int j = 0; j < seeds.cols; j++) {
+                    if (seeds.at<uchar>(i, j) == 255) {
+                        start_point = Point(j, i);
+                        break;
+                    }
+                }
+                if (start_point.x != -1) break;
+            }
+
+            if (start_point.x != -1) {
+                Mat filled = ex7_4_1_region_filling(inverted, start_point);
+                //bitwise_not(filled, filled);
+                imshow("Rezultat automat", filled);
+
+
+                Point1 p0 = findPo(filled);
+
+                if (p0.x != -1) {
+
+                    contour cnt = ex6_1_1_trace_contour(filled, p0);
+
+
+                    /*Mat dst = draw_contour(cnt, filled);
+
+                    imshow("Contur Detectat", dst);
+                    printf("Contur gasit! Numar puncte: %zu\n", cnt.border.size());
+
+                    LeafFeatures feat = calculateAll(filled, cnt);
+                    // Print results
+                    cout << "--- LEAF RESULTS ---" << endl;
+                    cout << "Circularity: " << feat.circularity << endl;
+                    cout << "Elongation: " << feat.elongation << endl;
+                    cout << "Solidity: " << feat.solidity << endl;
+                    cout << "Hu[0]: " << feat.hu[0] << endl;
+                    cout << "Hu[1]: " << feat.hu[1] << endl;
+                    cout << "Hu[2]: " << feat.hu[2] << endl;
+                    cout << "Hu[3]: " << feat.hu[3] << endl;
+                    cout << "Hu[4]: " << feat.hu[4] << endl;
+                    cout << "Hu[5]: " << feat.hu[5] << endl;
+                    cout << "Hu[6]: " << feat.hu[6] << endl;*/
+                }
+                else {
+                    printf("Nu a fost gasit niciun obiect.\n");
+                }
+
+            }
+
+            waitKey();
+        }
+
+    } while (op != 0);
+    return 0;
+}
 
 int main_cuEroare() {
     // 1. Define your species

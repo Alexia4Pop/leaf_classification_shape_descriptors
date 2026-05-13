@@ -1,0 +1,47 @@
+# Prerequisites: Visual Studio & C++
+######################################
+
+# Visual Studio Architecture & Temp files
+.vs/
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+out/
+build/
+
+# Compilation objects and libraries
+*.obj
+*.exe
+*.pdb
+*.ilk
+*.lib
+*.dll
+*.exp
+*.pch
+*.idb
+*.tlog
+*.lastbuildstate
+
+# Visual Studio User Files
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# OpenCV / Dependency folders (if they are inside your project folder)
+# Usually, you keep OpenCV in C:/, but if it's in your project, ignore it:
+# bin/
+# lib/
+
+# C++ Precompiled headers
+*.pch
+
+# Temporary files created by VS
+*.aps
+*.ncb
+*.opendb
+*.sdf
+*.cache
+*.ipch
+*.log

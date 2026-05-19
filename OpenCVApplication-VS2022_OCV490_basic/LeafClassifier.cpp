@@ -349,7 +349,7 @@ int main_orig()
 	return 0;
 }
 
-int main()
+int main_pt_imagine_singulara()
 {
     cv::utils::logging::setLogLevel(cv::utils::logging::LOG_LEVEL_FATAL);
     projectPath = _wgetcwd(0, 0);
@@ -376,16 +376,16 @@ int main()
             //cv::bitwise_not(src, inverted);
 
             Mat resized_image = resize_image(src);
-			imshow("Original image", resized_image);
+			//imshow("Original image", resized_image);
 
             //threshold(resized_image, resized_image, 127, 255, THRESH_BINARY);
 			//imshow("Thresholded Image", resized_image);
 
 			Mat segmented = segmentByRemovingPink(resized_image);
-			imshow("Segmented Image", segmented);
+			//imshow("Segmented Image", segmented);
 
             threshold(segmented, segmented, 127, 255, THRESH_BINARY);
-            imshow("Thresholded Image", segmented);
+            //imshow("Thresholded Image", segmented);
 
             Mat inverted;
             cv::bitwise_not(segmented, inverted);
@@ -410,6 +410,14 @@ int main()
                 //bitwise_not(filled, filled);
                 imshow("Rezultat automat", filled);
 
+                //NOU
+				Mat temporary = filled.clone();
+				bitwise_not(temporary, temporary);
+                Mat unite = Mat::ones(9, 9, CV_8UC1);
+				dilate(temporary, temporary, unite);
+				bitwise_not(temporary, temporary);
+				//imshow("Dilated Image", temporary);
+
 
                 Point1 p0 = findPo(filled);
 
@@ -418,7 +426,7 @@ int main()
                     contour cnt = ex6_1_1_trace_contour(filled, p0);
 
 
-                    /*Mat dst = draw_contour(cnt, filled);
+                    Mat dst = draw_contour(cnt, filled);
 
                     imshow("Contur Detectat", dst);
                     printf("Contur gasit! Numar puncte: %zu\n", cnt.border.size());
@@ -435,7 +443,7 @@ int main()
                     cout << "Hu[3]: " << feat.hu[3] << endl;
                     cout << "Hu[4]: " << feat.hu[4] << endl;
                     cout << "Hu[5]: " << feat.hu[5] << endl;
-                    cout << "Hu[6]: " << feat.hu[6] << endl;*/
+                    cout << "Hu[6]: " << feat.hu[6] << endl;
                 }
                 else {
                     printf("Nu a fost gasit niciun obiect.\n");
@@ -569,6 +577,101 @@ int main_calculareCSV() {
                     count++;
                 }
             }
+        }
+    }
+
+    cout << "Extraction Complete. Use the CSV file to create your graph." << endl;
+    return 0;
+}
+
+int main_calculareCSV_COLOR() {
+    // 1. Dataset Configuration
+    vector<string> species = {
+        "1. Quercus suber",
+        "2. Salix atrocinerea",
+        "3. Populus nigra",
+        "4. Alnus sp",
+        "5. Quercus robur"
+    };
+
+    string rootPath = "D:/FACULTATE/SEM II/PI/PROIECT/leaf_dataset/RGB/";
+
+    cout << "Starting Leaf Feature Extraction..." << endl;
+    cout << "Species, Elongation, Circularity, Solidity" << endl;
+
+    for (const string& s : species) {
+        string folderPath = rootPath + s;
+        int count = 0;
+
+        if (!fs::exists(folderPath)) {
+            cout << "Folder not found: " << folderPath << endl;
+            continue;
+        }
+
+        // 2. Iterate through the 10 images per folder
+        for (const auto& entry : fs::directory_iterator(folderPath)) {
+            if (count >= 10) break;
+
+            string imagePath = entry.path().string();
+            Mat src = imread(imagePath, IMREAD_COLOR);
+            cout << "Found image number " << count << endl;
+            if (src.empty()) continue;
+
+            count++;
+
+            Mat resized_image = resize_image(src);
+
+            Mat segmented = segmentByRemovingPink(resized_image);
+
+            threshold(segmented, segmented, 127, 255, THRESH_BINARY);
+
+            Mat inverted;
+            cv::bitwise_not(segmented, inverted);
+
+            Mat seeds;
+            inRange(inverted, 255, 255, seeds);
+
+            Point start_point(-1, -1);
+            for (int i = 0; i < seeds.rows; i++) {
+                for (int j = 0; j < seeds.cols; j++) {
+                    if (seeds.at<uchar>(i, j) == 255) {
+                        start_point = Point(j, i);
+                        break;
+                    }
+                }
+                if (start_point.x != -1) break;
+            }
+
+            if (start_point.x != -1) {
+                Mat filled = ex7_4_1_region_filling(inverted, start_point);
+           
+            
+                // --- STEP 4: CONTOUR TRACING (Your Tracer) ---
+                Point1 p0 = findPo(filled);
+                if (p0.x != -1) {
+                    contour cnt = ex6_1_1_trace_contour(filled, p0);
+                    if (cnt.border.size() > 20) {
+                        // --- STEP 5: FEATURE EXTRACTION (Your Descriptors) ---
+                            // This function calls your area/elongation/circularity/hu functions
+                        LeafFeatures feat = calculateAll(filled, cnt);
+
+                        // Output results for the plot
+                        cout << s << ", " << feat.elongation << ", " << feat.circularity
+                            << ", " << feat.solidity << ", " << feat.hu[0] << endl;
+
+                        // Save to your CSV function
+                        saveLeafToCSV(s, feat);
+                        //count++;
+                    }
+                    else {
+                        cout << "[Warning] Contur prea mic sau esuat pentru: " << entry.path().filename() << endl;
+                    }
+                }
+            }
+            else {
+                cout << "[Warning] Seed-ul nu a fost gasit pentru: " << entry.path().filename() << endl;
+            }
+            
         }
     }
 
@@ -765,7 +868,7 @@ void drawGraph2(vector<LeafEntry> data) {
     waitKey(0);
 }
 
-int main_grafic() {
+int main/*_grafic*/() {
 
     cout << "Generare grafic..." << endl;
     vector<LeafEntry> data = readCSV("D:/FACULTATE/SEM II/PI/PROIECT/OpenCVApplication-VS2022_OCV490_basic/leaf_results.csv");

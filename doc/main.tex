@@ -1,0 +1,83 @@
+\documentclass[12pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[margin=1in]{geometry}
+\usepackage{graphicx}
+\usepackage{newtxtext,newtxmath} % În loc de mathptmx
+
+
+\begin{document}
+
+\begin{titlepage}
+    \centering
+    
+    % --- University Logo (Top) ---
+    % Use \vspace* to push it closer to the physical top of the paper
+    \vspace*{-1cm}
+    \includegraphics[width=0.65\textwidth]{ut_fb_meta.jpg}\\[0.2cm]
+    
+    % --- Course Name ---
+    {\large \textbf{\textsc{PROCESAREA IMAGINILOR}}}\\[1.5cm]
+
+    % --- Project Title ---
+    {\Large \textbf{CLASIFICAREA FRUNZELOR PE BAZA}} \\[0.3cm]
+    {\Large \textbf{DESCRIPTORILOR GEOMETRICI DE FORMĂ}} \\[2.5cm]
+
+    % --- Document Type ---
+    \vspace*{+2cm}
+    {\Large \textsc{DOCUMENTATIE}} \\[3cm]
+
+    % --- Author Name ---
+    \vspace*{+1cm}
+    {\large \textbf{POP ALEXIA}} \\[2cm]
+
+    \vfill % This pushes the following text to the bottom of the page
+
+    % --- Footer Details (Bottom Left) ---
+    \begin{flushleft}
+        \textbf{Facultatea: Automatica si Calculatoare} \\
+        \textbf{Specializarea: CTI} \\
+        \textbf{An universitar: 2025 -- 2026}
+    \end{flushleft}
+
+\end{titlepage}
+
+% The actual content starts here
+\newpage
+\section{Introducere}
+Acest proiect se concentrează pe procesarea și clasificarea automată a imaginilor cu frunze. Prin extragerea unor caracteristici geometrice precum Circularitatea, Elongația și Soliditatea, urmărim să distingem între diferite specii botanice folosind tehnici de Vedere Artificială (Computer Vision).
+
+\section{Metoda Propusă}
+Fluxul de procesare a imaginilor constă în mai multe etape:
+\begin{enumerate}
+    \item \textbf{Preprocesare:} Redimensionarea și segmentarea prin culoare.
+    \item \textbf{Umplerea regiunilor (Region Filling):} Reconstrucție morfologică pentru a crea o mască binară solidă.
+    \item \textbf{Extragerea trăsăturilor:} Calcularea descriptorilor de formă și a Momentelor Hu.
+    \item \textbf{Analiza datelor:} Salvarea rezultatelor în format CSV și generarea unui grafic de tip scatter plot în spațiul trăsăturilor.
+\end{enumerate}
+
+\section{Descriptori Matematici}
+Pentru a asigura o clasificare precisă, au fost implementate următoarele formule:
+
+\subsection{Circularitatea}
+Măsoară cât de apropiată este o formă de un cerc perfect:
+$$C = \frac{4\pi \cdot \text{Aria}}{\text{Perimetru}^2}$$
+
+\subsection{Soliditatea}
+Măsoară densitatea formei în raport cu învelișul său convex (convex hull):
+$$S = \frac{\text{Aria}}{\text{Aria Învelișului Convex}}$$
+
+\section{Rezultatele Implementării}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.5\textwidth]{screenshots/image_558f85.png}
+    \caption{Distribuția în spațiul trăsăturilor: Elongație vs. Circularitate.}
+    \label{fig:results}
+\end{figure}
+
+Output-ul din consolă a confirmat rezultate consistente pentru speciile analizate, așa cum este prezentat în Secțiunea \ref{fig:results}.
+
+\section{Concluzie}
+Proiectul a demonstrat cu succes că descriptorii geometrici sunt eficienți pentru clasificarea frunzelor. Speciile cu trăsături morfologice distincte (de exemplu, \textit{Quercus robur} vs. \textit{Acer platanoides}) au prezentat o separare clară în spațiul trăsăturilor.
+
+\end{document}

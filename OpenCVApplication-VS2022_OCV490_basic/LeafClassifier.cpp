@@ -584,28 +584,40 @@ int main_calculareCSV() {
     return 0;
 }
 
-int main_calculareCSV_COLOR() {
+int calculareCSV_COLOR() {
     // 1. Dataset Configuration
     vector<string> species = {
         "1. Quercus suber",
         "2. Salix atrocinerea",
         "3. Populus nigra",
         "4. Alnus sp",
-        "5. Quercus robur"
+        "5. Quercus robur",
+        "6. Crataegus monogyna",
+        "8. Nerium oleander",
+        "17. Taxus bacatta",
+        "19. Polypodium vulgare",
+        "23. Erodium sp"
     };
 
     string rootPath = "D:/FACULTATE/SEM II/PI/PROIECT/leaf_dataset/RGB/";
+    string outputPath = "D:/FACULTATE/SEM II/PI/PROIECT/output_contours/";
 
     cout << "Starting Leaf Feature Extraction..." << endl;
     cout << "Species, Elongation, Circularity, Solidity" << endl;
 
     for (const string& s : species) {
         string folderPath = rootPath + s;
+        string saveFolderPath = outputPath + s;
         int count = 0;
 
         if (!fs::exists(folderPath)) {
             cout << "Folder not found: " << folderPath << endl;
             continue;
+        }
+
+        // --- IMPORTANT: Creăm automat structura de directoare dacă nu există ---
+        if (!fs::exists(saveFolderPath)) {
+            fs::create_directories(saveFolderPath);
         }
 
         // 2. Iterate through the 10 images per folder
@@ -662,6 +674,19 @@ int main_calculareCSV_COLOR() {
                         // Save to your CSV function
                         saveLeafToCSV(s, feat);
                         //count++;
+
+
+                        // =======================================================
+                        // --- ETAPA NOUĂ: DESENAREA ȘI SALVAREA CONTURULUI ---
+                        // =======================================================
+
+                        // Construim calea completă a noului fișier păstrând numele original (ex: frunza1.jpg)
+                        string filename = entry.path().filename().string();
+                        string fullSavePath = saveFolderPath + "/" + filename;
+
+                        // Salvăm fizic imaginea. Dacă imaginea există deja acolo de la rularea trecută, cv::imwrite o va rescrie automat.
+                        cv::imwrite(fullSavePath, draw_contour(cnt, filled));
+                        // =======================================================
                     }
                     else {
                         cout << "[Warning] Contur prea mic sau esuat pentru: " << entry.path().filename() << endl;
@@ -780,25 +805,37 @@ void drawGraph(vector<LeafEntry> data) {
         int y = (height - margin) - (int)((valC - minC) / rangeC * (height - 2 * margin));
 
         Scalar color = Scalar(128, 128, 128);
-        if (entry.speciesName.find("1.") != string::npos) color = Scalar(255, 0, 0);
+        if (entry.speciesName.find("19.") != string::npos) color = Scalar(150, 150, 0);
+        else if (entry.speciesName.find("23.") != string::npos) color = Scalar(150, 150, 150);
+        else if (entry.speciesName.find("1.") != string::npos) color = Scalar(255, 0, 0);
         else if (entry.speciesName.find("2.") != string::npos) color = Scalar(0, 180, 0);
         else if (entry.speciesName.find("3.") != string::npos) color = Scalar(0, 0, 255);
         else if (entry.speciesName.find("4.") != string::npos) color = Scalar(0, 150, 255);
         else if (entry.speciesName.find("5.") != string::npos) color = Scalar(255, 0, 255);
+        else if (entry.speciesName.find("6.") != string::npos) color = Scalar(255, 150, 0);
+        else if (entry.speciesName.find("8.") != string::npos) color = Scalar(150, 0, 255);
+        else if (entry.speciesName.find("17.") != string::npos) color = Scalar(0, 0, 150);
+
 
         circle(canvas, Point(x, y), 6, color, -1);
         circle(canvas, Point(x, y), 6, Scalar(0, 0, 0), 1);
     }
+
 
     // Etichete
     putText(canvas, "Elongation (X)", Point(width / 2 - 50, height - 20), FONT_HERSHEY_SIMPLEX, 0.5, Scalar(0, 0, 0), 1);
     putText(canvas, "Circularity (Y)", Point(10, 40), FONT_HERSHEY_SIMPLEX, 0.5, Scalar(0, 0, 0), 1);
 
 	putText(canvas, "1. Quercus suber", Point(width - margin - 150, margin + 20), FONT_HERSHEY_SIMPLEX, 0.5, Scalar(255, 0, 0), 1);
-	putText(canvas, "2. Quercus robur", Point(width - margin - 150, margin + 40), FONT_HERSHEY_SIMPLEX, 0.5, Scalar(0, 180, 0), 1);
-	putText(canvas, "3. Fagus sylvatica", Point(width - margin - 150, margin + 60), FONT_HERSHEY_SIMPLEX, 0.5, Scalar(0, 0, 255), 1);
-	putText(canvas, "4. Acer platanoides", Point(width - margin - 150, margin + 80), FONT_HERSHEY_SIMPLEX, 0.5, Scalar(0, 150, 255), 1);
-	putText(canvas, "5. Betula pendula", Point(width - margin - 150, margin + 100), FONT_HERSHEY_SIMPLEX, 0.5, Scalar(255, 0, 255), 1);
+	putText(canvas, "2. Salix atrocinerea", Point(width - margin - 150, margin + 40), FONT_HERSHEY_SIMPLEX, 0.5, Scalar(0, 180, 0), 1);
+	putText(canvas, "3. Populus nigra", Point(width - margin - 150, margin + 60), FONT_HERSHEY_SIMPLEX, 0.5, Scalar(0, 0, 255), 1);
+	putText(canvas, "4. Alnus sp", Point(width - margin - 150, margin + 80), FONT_HERSHEY_SIMPLEX, 0.5, Scalar(0, 150, 255), 1);
+	putText(canvas, "5. Quercus robur", Point(width - margin - 150, margin + 100), FONT_HERSHEY_SIMPLEX, 0.5, Scalar(255, 0, 255), 1);
+	putText(canvas, "6. Crataegus monogyna", Point(width - margin - 150, margin + 120), FONT_HERSHEY_SIMPLEX, 0.5, Scalar(255, 150, 0), 1);
+	putText(canvas, "8. Nerium oleander", Point(width - margin - 150, margin + 140), FONT_HERSHEY_SIMPLEX, 0.5, Scalar(150, 0, 255), 1);
+	putText(canvas, "17. Taxus bacatta", Point(width - margin - 150, margin + 160), FONT_HERSHEY_SIMPLEX, 0.5, Scalar(0, 0, 150), 1);
+	putText(canvas, "19. Polypodium vulgare", Point(width - margin - 150, margin + 180), FONT_HERSHEY_SIMPLEX, 0.5, Scalar(150, 150, 0), 1);
+	putText(canvas, "23. Erodium sp", Point(width - margin - 150, margin + 200), FONT_HERSHEY_SIMPLEX, 0.5, Scalar(150, 150, 150), 1);
 
     imshow("Feature Space - Leaf Classification", canvas);
     waitKey(0);
@@ -868,7 +905,7 @@ void drawGraph2(vector<LeafEntry> data) {
     waitKey(0);
 }
 
-int main/*_grafic*/() {
+int grafic() {
 
     cout << "Generare grafic..." << endl;
     vector<LeafEntry> data = readCSV("D:/FACULTATE/SEM II/PI/PROIECT/OpenCVApplication-VS2022_OCV490_basic/leaf_results.csv");
@@ -881,4 +918,9 @@ int main/*_grafic*/() {
     }
 
     return 0;
+}
+
+int main() {
+    //calculareCSV_COLOR();
+	grafic();
 }
